@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Script Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Dark mode styles */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a202c; /* Dark background */
+                color: #cbd5e0; /* Light text */
+            }
+            .card {
+                background-color: #2d3748; /* Darker card background */
+            }
+            .border-custom {
+                border-color: #4a5568; /* Darker border */
+            }
+            .button-custom {
+                background-color: #3182ce; /* Blue background */
+                color: #e2e8f0; /* Light text */
+            }
+            .button-custom:hover {
+                background-color: #2b6cb0; /* Darker blue on hover */
+            }
+        }
+
+        /* Notification styles */
+        #notification {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background-color: #4a90e2; /* Default blue background */
+            color: #ffffff; /* White text */
+            padding: 1rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
+            display: none; /* Hidden by default */
+            z-index: 1000;
+        }
+        #notification.hidden {
+            display: none;
+        }
+        #notification.show {
+            display: block;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
+    <div class="container mx-auto p-6">
+        <!-- Notification Box -->
+        <div id="notification" class="hidden">
+            <span id="notification-message">Notification message</span>
+            <button onclick="hideNotification()" class="ml-4 text-blue-200 hover:text-white">x</button>
+        </div>
+
+        <div class="mb-6">
+            <h1 class="text-4xl font-bold mb-4">Script Manager</h1>
+            <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <!-- Upload Script Card -->
+                <div class="card shadow-md rounded-lg p-6">
+                    <h2 class="text-2xl font-semibold mb-4">Upload Python Script</h2>
+                    <form action="/upload" method="post" enctype="multipart/form-data" id="upload-form">
+                        <div class="flex flex-col space-y-4">
+                            <input type="file" name="file" class="border p-2 rounded border-custom dark:bg-gray-700 dark:text-gray-300">
+                            <button type="submit" class="button-custom p-2 rounded hover:bg-blue-600">Upload</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- Available Scripts Card -->
+                <div class="card shadow-md rounded-lg p-6">
+                    <h2 class="text-2xl font-semibold mb-4">Available Scripts</h2>
+                    <form action="/run-script" method="post" id="run-script-form">
+                        <div class="flex flex-col space-y-4">
+                            <select name="script_name" class="border p-2 rounded border-custom dark:bg-gray-700 dark:text-gray-300">
+                                {% for script in scripts %}
+                                    <option value="{{ script }}">{{ script }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="button-custom p-2 rounded hover:bg-blue-600">Run Script</button>
+                        </div>
+                    </form>
+                </div>
+                <!-- Schedule Script Card -->
+                <div class="card shadow-md rounded-lg p-6">
+                    <h2 class="text-2xl font-semibold mb-4">Schedule Script</h2>
+                    <form action="/schedule-script" method="post" id="schedule-script-form">
+                        <div class="flex flex-col space-y-4">
+                            <select name="script_name" class="border p-2 rounded border-custom dark:bg-gray-700 dark:text-gray-300">
+                                {% for script in scripts %}
+                                    <option value="{{ script }}">{{ script }}</option>
+                                {% endfor %}
+                            </select>
+                            <input type="text" name="interval" placeholder="Interval (minutes)" class="border p-2 rounded border-custom dark:bg-gray-700 dark:text-gray-300">
+                            <input type="text" name="day" placeholder="Day (Monday, ...)" class="border p-2 rounded border-custom dark:bg-gray-700 dark:text-gray-300">
+                            <input type="text" name="time" placeholder="Time (HH:MM)" class="border p-2 rounded border-custom dark:bg-gray-700 dark:text-gray-300">
+                            <button type="submit" class="button-custom p-2 rounded hover:bg-blue-600">Schedule Script</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <!-- Script Status and Scheduled Jobs -->
+        <div class="grid gap-6 md:grid-cols-2">
+            <!-- Script Status Card -->
+            <div class="card shadow-md rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">Script Status</h2>
+                <ul class="list-disc pl-5">
+                    {% for script, status in script_status.items() %}
+                        <li class="mb-2">
+                            <span class="font-semibold">{{ script }}</span> - 
+                            Status: {{ status.status }} - 
+                            Last Run: {{ status.last_run if status.last_run else 'Never' }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <!-- Scheduled Jobs Card -->
+            <div class="card shadow-md rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">Scheduled Jobs</h2>
+                <ul class="list-disc pl-5">
+                    {% for job in jobs %}
+                        <li class="mb-2">{{ job.id }} - {{ job.next_run_time }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to show the notification
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const messageSpan = document.getElementById('notification-message');
+            messageSpan.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 5000);
+        }
+
+        // Function to hide the notification
+        function hideNotification() {
+            const notification = document.getElementById('notification');
+            notification.classList.remove('show');
+        }
+
+        // Handle form submissions with AJAX
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+              .then(data => {
+                  showNotification(data.message);
+              }).catch(error => {
+                  showNotification('An error occurred');
+              });
+        });
+
+        document.getElementById('run-script-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+              .then(data => {
+                  showNotification(data.message);
+              }).catch(error => {
+                  showNotification('An error occurred');
+              });
+        });
+
+        document.getElementById('schedule-script-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch(this.action, {
+                method: 'POST',
+                body: formData
+            }).then(response => response.json())
+              .then(data => {
+                  showNotification(data.message);
+              }).catch(error => {
+                  showNotification('An error occurred');
+              });
+        });
+    </script>
+</body>
+</html>
