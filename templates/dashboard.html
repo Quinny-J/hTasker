@@ -3,41 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Script Manager</title>
+    <title>Script Manager Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Dark mode styles */
         @media (prefers-color-scheme: dark) {
             body {
-                background-color: #1a202c; /* Dark background */
-                color: #cbd5e0; /* Light text */
+                background-color: #1a202c;
+                color: #cbd5e0;
             }
             .card {
-                background-color: #2d3748; /* Darker card background */
+                background-color: #2d3748;
             }
             .border-custom {
-                border-color: #4a5568; /* Darker border */
+                border-color: #4a5568;
             }
             .button-custom {
-                background-color: #3182ce; /* Blue background */
-                color: #e2e8f0; /* Light text */
+                background-color: #3182ce;
+                color: #e2e8f0;
             }
             .button-custom:hover {
-                background-color: #2b6cb0; /* Darker blue on hover */
+                background-color: #2b6cb0;
             }
         }
-
-        /* Notification styles */
         #notification {
             position: fixed;
             bottom: 1rem;
             right: 1rem;
-            background-color: #4a90e2; /* Default blue background */
-            color: #ffffff; /* White text */
+            background-color: #4a90e2;
+            color: #ffffff;
             padding: 1rem;
             border-radius: 0.5rem;
             box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
-            display: none; /* Hidden by default */
+            display: none;
             z-index: 1000;
         }
         #notification.hidden {
@@ -50,16 +47,13 @@
 </head>
 <body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
     <div class="container mx-auto p-6">
-        <!-- Notification Box -->
         <div id="notification" class="hidden">
             <span id="notification-message">Notification message</span>
             <button onclick="hideNotification()" class="ml-4 text-blue-200 hover:text-white">x</button>
         </div>
-
         <div class="mb-6">
-            <h1 class="text-4xl font-bold mb-4">Script Manager</h1>
+            <h1 class="text-4xl font-bold mb-4">Script Manager Dashboard</h1>
             <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                <!-- Upload Script Card -->
                 <div class="card shadow-md rounded-lg p-6">
                     <h2 class="text-2xl font-semibold mb-4">Upload Python Script</h2>
                     <form action="/upload" method="post" enctype="multipart/form-data" id="upload-form">
@@ -69,7 +63,6 @@
                         </div>
                     </form>
                 </div>
-                <!-- Available Scripts Card -->
                 <div class="card shadow-md rounded-lg p-6">
                     <h2 class="text-2xl font-semibold mb-4">Available Scripts</h2>
                     <form action="/run-script" method="post" id="run-script-form">
@@ -79,12 +72,11 @@
                                     <option value="{{ script }}">{{ script }}</option>
                                 {% endfor %}
                             </select>
-                            <input type="text" name="arguments" placeholder="Arguments (space-separated)" class="border p-2 rounded border-custom dark:bg-gray-700 dark:text-gray-300" optional>
+                            <input type="text" name="arguments" placeholder="Arguments (optional)" class="border p-2 rounded border-custom dark:bg-gray-700 dark:text-gray-300">
                             <button type="submit" class="button-custom p-2 rounded hover:bg-blue-600">Run Script</button>
                         </div>
                     </form>
                 </div>
-                <!-- Schedule Script Card -->
                 <div class="card shadow-md rounded-lg p-6">
                     <h2 class="text-2xl font-semibold mb-4">Schedule Script</h2>
                     <form action="/schedule-script" method="post" id="schedule-script-form">
@@ -97,16 +89,14 @@
                             <input type="text" name="interval" placeholder="Interval (minutes)" class="border p-2 rounded border-custom dark:bg-gray-700 dark:text-gray-300">
                             <input type="text" name="day" placeholder="Day (Monday, ...)" class="border p-2 rounded border-custom dark:bg-gray-700 dark:text-gray-300">
                             <input type="text" name="time" placeholder="Time (HH:MM)" class="border p-2 rounded border-custom dark:bg-gray-700 dark:text-gray-300">
-                            <input type="text" name="arguments" placeholder="Arguments (space-separated)" class="border p-2 rounded border-custom dark:bg-gray-700 dark:text-gray-300" optional>
+                            <input type="text" name="arguments" placeholder="Arguments (optional)" class="border p-2 rounded border-custom dark:bg-gray-700 dark:text-gray-300">
                             <button type="submit" class="button-custom p-2 rounded hover:bg-blue-600">Schedule Script</button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
-        <!-- Script Status and Scheduled Jobs -->
         <div class="grid gap-6 md:grid-cols-2">
-            <!-- Script Status Card -->
             <div class="card shadow-md rounded-lg p-6">
                 <h2 class="text-2xl font-semibold mb-4">Script Status</h2>
                 <ul class="list-disc pl-5">
@@ -119,7 +109,6 @@
                     {% endfor %}
                 </ul>
             </div>
-            <!-- Scheduled Jobs Card -->
             <div class="card shadow-md rounded-lg p-6">
                 <h2 class="text-2xl font-semibold mb-4">Scheduled Jobs</h2>
                 <ul class="list-disc pl-5">
@@ -133,10 +122,31 @@
                 </ul>
             </div>
         </div>
+        <div class="grid gap-6 md:grid-cols-2 mt-6">
+            <div class="card shadow-md rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">Execution Logs</h2>
+                <ul class="list-disc pl-5">
+                    {% for log in logs %}
+                        <li class="mb-2">{{ log.timestamp }} - <strong>{{ log.script }}</strong>: {{ log.output }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="card shadow-md rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">Performance Data</h2>
+                <ul class="list-disc pl-5">
+                    {% for script, data in performance_data.items() %}
+                        <li class="mb-2">
+                            <strong>{{ script }}</strong>: 
+                            Started at: {{ data.start_time.strftime('%Y-%m-%d %H:%M:%S') }},
+                            Ended at: {{ data.end_time.strftime('%Y-%m-%d %H:%M:%S') }},
+                            Duration: {{ data.duration }} seconds
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
     </div>
-
     <script>
-        // Function to show the notification
         function showNotification(message) {
             const notification = document.getElementById('notification');
             const messageSpan = document.getElementById('notification-message');
@@ -145,13 +155,11 @@
             setTimeout(() => notification.classList.remove('show'), 5000);
         }
 
-        // Function to hide the notification
         function hideNotification() {
             const notification = document.getElementById('notification');
             notification.classList.remove('show');
         }
 
-        // Handle form submissions with AJAX
         document.getElementById('upload-form').addEventListener('submit', function(event) {
             event.preventDefault();
             const formData = new FormData(this);
@@ -161,6 +169,7 @@
             }).then(response => response.json())
               .then(data => {
                   showNotification(data.message);
+                  setTimeout(() => location.reload(), 1000);
               }).catch(error => {
                   showNotification('An error occurred');
               });
@@ -175,6 +184,7 @@
             }).then(response => response.json())
               .then(data => {
                   showNotification(data.message);
+                  setTimeout(() => location.reload(), 1000);
               }).catch(error => {
                   showNotification('An error occurred');
               });
@@ -189,6 +199,7 @@
             }).then(response => response.json())
               .then(data => {
                   showNotification(data.message);
+                  setTimeout(() => location.reload(), 1000);
               }).catch(error => {
                   showNotification('An error occurred');
               });

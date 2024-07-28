@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Execution Logs</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a202c;
+                color: #cbd5e0;
+            }
+            .card {
+                background-color: #2d3748;
+            }
+            .border-custom {
+                border-color: #4a5568;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
+    <div class="container mx-auto p-6">
+        <div class="mb-6">
+            <h1 class="text-4xl font-bold mb-4">Execution Logs</h1>
+            <div class="card shadow-md rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">Logs</h2>
+                <ul class="list-disc pl-5">
+                    {% for log in logs %}
+                        <li class="mb-2">{{ log.timestamp }} - <strong>{{ log.script }}</strong>: {{ log.output }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

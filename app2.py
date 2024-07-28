@@ -17,6 +17,9 @@ scheduler = BackgroundScheduler()
 scheduler.start()  # Start scheduler here
 
 script_status = {}
+script_versions = {}
+logs = []
+performance_data = {}
 
 # Ensure the upload folder exists
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -28,9 +31,13 @@ def allowed_file(filename):
 def run_script(script_path, *args):
     script_name = os.path.basename(script_path)
     script_status[script_name] = {'status': 'Running', 'last_run': None}
+    start_time = datetime.now()
     command = ['python', script_path] + list(args)
-    subprocess.run(command)
-    script_status[script_name] = {'status': 'Completed', 'last_run': datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+    result = subprocess.run(command, capture_output=True, text=True)
+    end_time = datetime.now()
+    script_status[script_name] = {'status': 'Completed', 'last_run': end_time.strftime('%Y-%m-%d %H:%M:%S')}
+    logs.append({'script': script_name, 'output': result.stdout, 'timestamp': end_time.strftime('%Y-%m-%d %H:%M:%S')})
+    performance_data[script_name] = {'start_time': start_time, 'end_time': end_time, 'duration': (end_time - start_time).total_seconds()}
 
 @app.route('/')
 def index():
@@ -48,7 +55,7 @@ def index():
                 'id': job.id,
                 'next_run_time': formatted_time
             })
-    return render_template('index.html', scripts=scripts, jobs=formatted_jobs, script_status=script_status)
+    return render_template('dashboard.html', scripts=scripts, jobs=formatted_jobs, script_status=script_status, logs=logs, performance_data=performance_data)
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -59,7 +66,10 @@ def upload_file():
         return jsonify({'status': 'error', 'message': 'No selected file'}), 400
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        version = script_versions.get(filename, 0) + 1
+        script_versions[filename] = version
+        versioned_filename = f"{filename.rsplit('.', 1)[0]}_v{version}.py"
+        file.save(os.path.join(app.config['UPLOAD_FOLDER'], versioned_filename))
         return jsonify({'status': 'success', 'message': 'File uploaded successfully!'}), 200
     return jsonify({'status': 'error', 'message': 'Invalid file type'}), 400
 
@@ -101,6 +111,13 @@ def cancel_job(job_id):
         return redirect(url_for('index', message=f"Job {job_id} canceled!"))
     return redirect(url_for('index', message=f"Job {job_id} not found!"))
 
+@app.route('/logs')
+def get_logs():
+    return render_template('logs.html', logs=logs)
+
+@app.route('/api/docs')
+def api_docs():
+    return render_template('api_docs.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Documentation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a202c;
+                color: #cbd5e0;
+            }
+            .card {
+                background-color: #2d3748;
+            }
+            .border-custom {
+                border-color: #4a5568;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300">
+    <div class="container mx-auto p-6">
+        <div class="mb-6">
+            <h1 class="text-4xl font-bold mb-4">API Documentation</h1>
+            <div class="card shadow-md rounded-lg p-6">
+                <h2 class="text-2xl font-semibold mb-4">Endpoints</h2>
+                <ul class="list-disc pl-5">
+                    <li class="mb-2">
+                        <strong>Upload Script</strong> - POST /upload
+                        <ul class="list-disc pl-5">
+                            <li class="mb-2">Upload a Python script file.</li>
+                            <li class="mb-2">Parameters: <code>file</code> (multipart/form-data)</li>
+                        </ul>
+                    </li>
+                    <li class="mb-2">
+                        <strong>Run Script</strong> - POST /run-script
+                        <ul class="list-disc pl-5">
+                            <li class="mb-2">Run a Python script immediately.</li>
+                            <li class="mb-2">Parameters: <code>script_name</code> (string), <code>arguments</code> (string, optional)</li>
+                        </ul>
+                    </li>
+                    <li class="mb-2">
+                        <strong>Schedule Script</strong> - POST /schedule-script
+                        <ul class="list-disc pl-5">
+                            <li class="mb-2">Schedule a Python script to run at a specific interval or time.</li>
+                            <li class="mb-2">Parameters: <code>script_name</code> (string), <code>interval</code> (int, optional), <code>day</code> (string, optional), <code>time</code> (string, optional), <code>arguments</code> (string, optional)</li>
+                        </ul>
+                    </li>
+                    <li class="mb-2">
+                        <strong>Cancel Job</strong> - POST /cancel-job/&lt;job_id&gt;
+                        <ul class="list-disc pl-5">
+                            <li class="mb-2">Cancel a scheduled job.</li>
+                            <li class="mb-2">Parameters: <code>job_id</code> (string)</li>
+                        </ul>
+                    </li>
+                    <li class="mb-2">
+                        <strong>Get Logs</strong> - GET /logs
+                        <ul class="list-disc pl-5">
+                            <li class="mb-2">Retrieve execution logs.</li>
+                        </ul>
+                    </li>
+                    <li class="mb-2">
+                        <strong>API Documentation</strong> - GET /api/docs
+                        <ul class="list-disc pl-5">
+                            <li class="mb-2">View API documentation.</li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
