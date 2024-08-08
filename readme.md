@@ -1,6 +1,8 @@
 # 📜 hTasker
 
 A web-based application built with Flask to upload, run, and schedule Python scripts. The app features a user-friendly interface styled with Tailwind CSS.
+APP.py - Semi detailed logging
+APP2.py - Detailed logging
 
 ## ✨ Features
 
@@ -69,10 +71,6 @@ hTasker/
 ## 🎨 Styling
 
 This project uses [Tailwind CSS](https://tailwindcss.com/) for styling. The CSS is included via CDN for simplicity.
-
-## 📜 License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ## 🧑‍💻 Contributing
 
